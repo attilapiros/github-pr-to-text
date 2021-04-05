@@ -2,10 +2,10 @@
 
 Get the GitHub PR content in text format.
 
-- Have you ever disturbed by hidden item like this?
+- Have you ever disturbed by "hidden items" like this?
   ![Hidden items](doc/hidden_items_in_github_pr.png)
-- Have you ever expanded sevaral levels of collapsed comments just to search for a text in GitHub PR?
-- Have you ever missed your IDE/editor to visit a code line where the comment was referencing to?
+- Have you ever expanded several levels of collapsed comments just to search for a text in a GitHub PR?
+- Have you ever missed your IDE/editor to visit an exact line within the code to which the comment was referring to?
 
 If yes you can give a shot to this simple tool.
 
@@ -22,7 +22,7 @@ Create a github access token and add it to `~/.github_access_token.cfg` file lik
 AccessToken = <your-github-access-token>
 ```
 
-# Usage
+# Example usage
 
 ```
 $ git-github-pr-to-text --repository apache/spark 31790
