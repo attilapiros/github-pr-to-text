@@ -2,9 +2,9 @@
 
 Get the GitHub PR content in text format.
 
-- Have you ever disturbed by "hidden items" like this?
+- Have you ever been annoyed by "hidden items" like this?
   ![Hidden items](doc/hidden_items_in_github_pr.png)
-- Have you ever expanded several levels of collapsed comments just to search for a text in a GitHub PR?
+- Have you ever expanded several levels of collapsed comments just to search for a simple text in a GitHub PR?
 - Have you ever missed your IDE/editor to visit an exact line within the code to which the comment was referring to?
 
 If yes you can give a shot to this simple tool.
