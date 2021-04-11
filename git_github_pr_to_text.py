@@ -20,18 +20,11 @@ def append_bordered(str_list, text):
     str_list.append(separator)
 
 
-def entry_to_string(entry, withdiff, is_top):
-    if is_top:
-        prefix = ''
-    else:
-        prefix = '> '
-
+def entry_to_string(entry, withdiff):
     str_list = []
 
     # header
-    text = '#' + str(entry['id']) + '  '
-    if entry['in_reply_to_id'] is not None:
-        text = text + "(reply to: #" + str(entry['in_reply_to_id']) + ')  '
+    text = '#' + str(entry['pres_id']) + '  '
     text = text + entry['user_login'] + '  '
     text = text + entry['url']
     append_bordered(str_list, text)
@@ -46,10 +39,13 @@ def entry_to_string(entry, withdiff, is_top):
     # the body of the comment
     str_list.extend(entry['body'].split('\n'))
 
-    return prefix + ('\n' + prefix).join(str_list) + '\n'
+    return '\n'.join(str_list) + '\n'
 
 
 def build_review_comment_hiearchy(review_comments):
+    # As https://docs.github.com/en/rest/reference/pulls#create-a-reply-for-a-review-comment
+    # describes when reply is sent for a comment the cimment is specified by "the ID of a top-level
+    # review comment, not a reply to that comment. Replies to replies are not supported."
     rootEntriesById = {}
     leaves = []
     for review_comment in review_comments:
@@ -112,6 +108,22 @@ def print_pr_title_and_description(pr):
         print(line)
 
 
+def add_presentation_ids(comment_hiearchy):
+    # As replies are created for the top level comments a main and a subindex is enough
+    # to represent the comment hiearchy.
+    main_index = 1
+    for comment in comment_hiearchy:
+        new_id = str(main_index)
+        comment['pres_id'] = new_id
+        prefix = new_id + '.'
+        sub_index = 1
+        for reply in comment['replies']:
+            new_id = prefix + str(sub_index)
+            reply['pres_id'] = new_id
+            sub_index += 1
+        main_index += 1
+
+
 def main(argv=None, apply_config=True):
     """Command-line entry."""
     if argv is None:
@@ -140,13 +152,14 @@ def main(argv=None, apply_config=True):
     entries = build_review_comment_hiearchy(pr.get_review_comments())
     entries.extend(process_issue_comments(pr.get_issue_comments()))
     entries.sort(key=lambda e: e['created_at'])
+    add_presentation_ids(entries)
 
     print_pr_title_and_description(pr)
     # print PR review and issue comments
     for entry in entries:
-        print(entry_to_string(entry, args.withdiff, True))
+        print(entry_to_string(entry, args.withdiff))
         for reply in entry['replies']:
-            print(entry_to_string(reply, args.withdiff, False))
+            print(entry_to_string(reply, args.withdiff))
 
     print('\nvim: foldmethod=marker')
 
