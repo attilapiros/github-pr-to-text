@@ -8,7 +8,7 @@ setup(name='github-pr-to-text',
       author_email='piros.attila.zsolt@gmail.com',
       license='Apache License 2.0',
       install_requires=[
-          'PyGithub>=1.54.1',
+          'PyGithub>=2.3.0',
       ],
       py_modules=['git_github_pr_to_text'],
       zip_safe=False,
