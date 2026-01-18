@@ -1,0 +1,19 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "git-github-pr-to-text"
+version = "0.2.0"
+authors = [
+  { name="Attila Piros", email="piros.attila.zsolt@gmail.com" },
+]
+description = "Get the GitHub PR content in text format"
+readme = "README.md"
+requires-python = ">=3.7"
+dependencies = [
+    "PyGithub>=2.3.0",
+]
+
+[project.scripts]
+git_github_pr_to_text = "git_github_pr_to_text.main:main"
