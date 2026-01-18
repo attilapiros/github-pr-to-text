@@ -11,7 +11,9 @@ If yes you can give a shot to this simple tool.
 
 # Install
 
-After cloning this repo call `pip install .` in the root directory of your clone.
+```
+$ pip install git+https://github.com/attilapiros/github-pr-to-text
+```
 
 # Setup
 
