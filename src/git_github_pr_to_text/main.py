@@ -42,9 +42,9 @@ def entry_to_string(entry, withdiff):
     return '\n'.join(str_list) + '\n'
 
 
-def build_review_comment_hiearchy(review_comments):
+def build_review_comment_hierarchy(review_comments):
     # As https://docs.github.com/en/rest/reference/pulls#create-a-reply-for-a-review-comment
-    # describes when reply is sent for a comment the cimment is specified by "the ID of a top-level
+    # describes when reply is sent for a comment the comment is specified by "the ID of a top-level
     # review comment, not a reply to that comment. Replies to replies are not supported."
     rootEntriesById = {}
     leaves = []
@@ -70,10 +70,10 @@ def build_review_comment_hiearchy(review_comments):
             entry['code_diff'] = None
             leaves.append(entry)
 
-    # print(rootEntriesById)
-
     for leave in leaves:
-        rootEntriesById[leave['in_reply_to_id']]['replies'].append(leave)
+        parent = rootEntriesById.get(leave['in_reply_to_id'])
+        if parent is not None:
+            parent['replies'].append(leave)
 
     for root in rootEntriesById.values():
         root['replies'].sort(key=lambda e: e['created_at'])
@@ -102,17 +102,17 @@ def process_issue_comments(issue_comments):
 def print_pr_title_and_description(pr):
     str_list = []
     append_bordered(str_list, pr.title)
-    str_list.append(pr.body.replace(win_eol, unix_eol))
+    str_list.append((pr.body or '').replace(win_eol, unix_eol))
 
     for line in str_list:
         print(line)
 
 
-def add_presentation_ids(comment_hiearchy):
+def add_presentation_ids(comment_hierarchy):
     # As replies are created for the top level comments a main and a subindex is enough
-    # to represent the comment hiearchy.
+    # to represent the comment hierarchy.
     main_index = 1
-    for comment in comment_hiearchy:
+    for comment in comment_hierarchy:
         new_id = str(main_index)
         comment['pres_id'] = new_id
         prefix = new_id + '.'
@@ -124,7 +124,7 @@ def add_presentation_ids(comment_hiearchy):
         main_index += 1
 
 
-def main(argv=None, apply_config=True):
+def main(argv=None):
     """Command-line entry."""
     if argv is None:
         argv = sys.argv
@@ -135,21 +135,33 @@ def main(argv=None, apply_config=True):
                         help='the Github repo name (default: %(default)s)',
                         default='apache/spark')
     parser.add_argument('--withdiff',
-                        type=bool,
-                        help='flag to switch off diffs (default: %(default)s)',
+                        action=argparse.BooleanOptionalAction,
+                        help='include diff hunks in output (default: %(default)s)',
                         default=True)
     parser.add_argument('pr', type=int, help='the PR id')
 
+    if len(argv) == 1:
+        parser.print_help()
+        sys.exit(0)
+
     args = parser.parse_args(argv[1:])
 
-    config = configparser.ConfigParser()
-    config.read([os.path.expanduser('~/.github_access_token.cfg')])
+    token = os.environ.get('GITHUB_TOKEN')
+    if token is None:
+        config = configparser.ConfigParser()
+        config.read([os.path.expanduser('~/.github_access_token.cfg')])
+        if 'github.com' not in config or 'AccessToken' not in config['github.com']:
+            sys.exit(
+                'Error: set the GITHUB_TOKEN environment variable or create '
+                '~/.github_access_token.cfg with a [github.com] AccessToken entry.'
+            )
+        token = config['github.com']['AccessToken']
 
-    github = Github(config['github.com']['AccessToken'])
+    github = Github(token)
     repo = github.get_repo(args.repository)
     pr = repo.get_pull(args.pr)
 
-    entries = build_review_comment_hiearchy(pr.get_review_comments())
+    entries = build_review_comment_hierarchy(pr.get_review_comments())
     entries.extend(process_issue_comments(pr.get_issue_comments()))
     entries.sort(key=lambda e: e['created_at'])
     add_presentation_ids(entries)

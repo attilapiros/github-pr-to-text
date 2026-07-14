@@ -17,12 +17,28 @@ $ pip install git+https://github.com/attilapiros/github-pr-to-text
 
 # Setup
 
-Create a github access token and add it to `~/.github_access_token.cfg` file like:
+The tool looks for credentials in this order:
 
-```
-[github.com]
-AccessToken = <your-github-access-token>
-```
+1. **Environment variable** (recommended for CI/scripts):
+   ```
+   export GITHUB_TOKEN=<your-github-access-token>
+   ```
+
+2. **Config file** – create `~/.github_access_token.cfg`:
+   ```
+   [github.com]
+   AccessToken = <your-github-access-token>
+   ```
+
+Create a Fine-grained personal access token with read access to the target repository.
+
+# Options
+
+| Option | Default | Description |
+|---|---|---|
+| `pr` | *(required)* | PR number |
+| `--repository` | `apache/spark` | Repository in `owner/repo` form |
+| `--withdiff` / `--no-withdiff` | `--withdiff` | Include diff hunks in output; use `--no-withdiff` to suppress them |
 
 # Handling comment replies
 
@@ -34,6 +50,17 @@ Check #5.1 in the example below.
 
 # Example usage
 
+To include diff hunks (default):
+```
+$ git-github-pr-to-text --repository apache/spark 32083
+```
+
+To suppress diff hunks (cleaner output for reading or LLM input):
+```
+$ git-github-pr-to-text --repository apache/spark 32083 --no-withdiff
+```
+
+Full output with diffs:
 ```
 $ git-github-pr-to-text --repository apache/spark 32083
 ------------------------------------------------------------------------------------
